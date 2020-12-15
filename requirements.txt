@@ -7,3 +7,5 @@ torch==1.5.1
 torchvision==0.6.1
 onnx==1.7.0
 onnxruntime==1.2.0
+pandas==1.1.5
+opencv-python-headless==4.4.0.46
