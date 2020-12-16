@@ -27,8 +27,8 @@ HEAD_POSE = ["nod", "shake", "other"]
 start_idx = dict()
 all_files = [f for f in listdir("collected_data") if isfile(join("collected_data", f))]
 for pose in HEAD_POSE:
-    pose_list = [f for f in all_files if pose in f]
-    start_idx[pose] = int(max(pose_list).split('_')[-1]) if pose_list else 0
+    pose_list = [int(f.split('_')[-1]) for f in all_files if pose in f]
+    start_idx[pose] = max(pose_list) if pose_list else 0
 
 def _main(cap_src):
 
