@@ -14,9 +14,12 @@ from os.path import isfile, join
 #local imports
 from face_detector import FaceDetector
 from utils import draw_axis
+from NodeShakeMode import NodShakeMode
 
 
 root_path = str(Path(__file__).absolute().parent.parent)
+
+COLLECT_DATA = False  # whether to collect data or not
 
 MAXLEN = 9 * 4  # max length of deque object used for tracking movement
 # my mac currently has 9 frames per second
@@ -32,11 +35,17 @@ for pose in HEAD_POSE:
 
 def _main(cap_src):
 
+    prev_data = []
+    data = []
+    mode2 = NodShakeMode(prev_data, data)
+
     cap = cv2.VideoCapture(cap_src)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
     face_d = FaceDetector()
+
+    eye_model = f'{root_path}/pretrained/haarcascades/haarcascade_eye_tree_eyeglasses.xml'
 
     sess = onnxruntime.InferenceSession(f'{root_path}/pretrained/fsanet-1x1-iter-688590.onnx')
 
@@ -55,7 +64,13 @@ def _main(cap_src):
             print('Could not capture a valid frame from video source, check your cam/video value...')
             break
         #get face bounding boxes from frame
-        face_bb = face_d.get(frame)
+        # face_bb = face_d.get(frame)
+        face_bb, data = face_d.detect_face_and_eyes_enhanced(frame, cv2.CascadeClassifier(eye_model))
+
+        mode2.set_data(prev_data, data)
+        head_pose = mode2.apply()
+        prev_data.append(data)
+
         for (x1,y1,x2,y2) in face_bb:
             face_roi = frame[y1:y2+1,x1:x2+1]
 
@@ -64,7 +79,7 @@ def _main(cap_src):
             face_roi = face_roi.transpose((2,0,1))
             face_roi = np.expand_dims(face_roi,axis=0)
             face_roi = (face_roi-127.5)/128
-            face_roi = face_roi.astype(np.float32)
+            face_roi = face_roi.astype(np.float32)  # -> (1, 3, 64, 64)
 
             #get headpose
             res1 = sess.run(["output"], {"input": face_roi})[0]
@@ -76,13 +91,13 @@ def _main(cap_src):
             tracking_dict["pitch"].append(pitch)
             tracking_dict["roll"].append(roll)
 
-            head_pose = ''
-            print(datetime.datetime.now(), yaw, pitch, roll)
-            print(np.std(tracking_dict["yaw"]), np.std(tracking_dict["pitch"]), np.std(tracking_dict["roll"]))
+            # head_pose = ''
+            # print(datetime.datetime.now(), yaw, pitch, roll)
+            # print(np.std(tracking_dict["yaw"]), np.std(tracking_dict["pitch"]), np.std(tracking_dict["roll"]))
 
-            # Nodding is when pitch is changing fairly sinusoidal while roll and yaw stays relatively consistent
-            if np.std(tracking_dict["yaw"]) < 3 and np.std(tracking_dict["roll"]) < 3 and np.std(tracking_dict["pitch"]) > 3:
-                head_pose = 'NOD' 
+            # # Nodding is when pitch is changing fairly sinusoidal while roll and yaw stays relatively consistent
+            # if np.std(tracking_dict["yaw"]) < 3 and np.std(tracking_dict["roll"]) < 3 and np.std(tracking_dict["pitch"]) > 3:
+            #     head_pose = 'NOD' 
 
 
             draw_axis(frame,yaw,pitch,roll,tdx=(x2-x1)//2+x1,tdy=(y2-y1)//2+y1,size=50)
@@ -91,7 +106,7 @@ def _main(cap_src):
             #draw face bb
             # cv2.rectangle(frame,(x1,y1),(x2,y2),(0,255,0),2)
 
-            if len(tracking_dict["yaw"]) == MAXLEN:
+            if COLLECT_DATA and len(tracking_dict["yaw"]) == MAXLEN:
                 if not collect_head_pose:
                     collect_head_pose = random.choice(HEAD_POSE)
                 else:

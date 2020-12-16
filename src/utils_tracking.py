@@ -104,6 +104,9 @@ def check_GPU_availability(cuda_n=0):
 
     return device
 
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
 
 if __name__ == "__main__":
     fix_seed(0)

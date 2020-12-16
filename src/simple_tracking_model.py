@@ -18,7 +18,8 @@ class SimpleHeadPoseModel(nn.Module):
 
         self.lstm = nn.LSTM(input_size, hidden_layer, batch_first=True, bidirectional=True)
         self.fc1 = nn.Linear(2 * hidden_layer, 2 * hidden_layer)
-        self.fc2 = nn.Linear(2 * hidden_layer, label_size)
+        self.fc2 = nn.Linear(2 * hidden_layer, 2 * hidden_layer)
+        self.fc3 = nn.Linear(2 * hidden_layer, label_size)
 
         self.dropout = nn.Dropout(dropout)
         self.softmax = F.softmax
@@ -31,8 +32,9 @@ class SimpleHeadPoseModel(nn.Module):
         pooled = F.max_pool1d(lstm_out.transpose(1, 2), lstm_out.shape[1]).squeeze(2)  # -> (batch_size, num_directions*hidden_size)
         out = self.dropout(pooled)
         out = F.relu(self.fc1(out))
-        out = self.dropout(out)
-        out = self.fc2(out)
+        # out = self.dropout(out)
+        out = F.relu(self.fc2(out))
+        out = self.fc3(out)
 
         if softmax:
             out = self.softmax(out)
