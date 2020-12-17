@@ -140,18 +140,18 @@ class FaceDetector:
                 y = startY - face_eps if startY - face_eps > 10 else startY + face_eps
 
                 # left face half
-                cv2.rectangle(img, (startX, startY), (endX - int((endX - startX) / 2) + face_eps, endY),
-                              face_left_color, 4)
+                # cv2.rectangle(img, (startX, startY), (endX - int((endX - startX) / 2) + face_eps, endY),
+                #               face_left_color, 4)
 
                 # right face half
-                cv2.rectangle(img, (startX + int((endX - startX) / 2) - face_eps, startY), (endX, endY),
-                              face_right_color, 4)
+                # cv2.rectangle(img, (startX + int((endX - startX) / 2) - face_eps, startY), (endX, endY),
+                #               face_right_color, 4)
 
                 faces.append([startX, startY, endX - startX, endY - startY])
                 left_faces.append(
                     [startX, startY, (endX - int((endX - startX) / 2) + face_eps - startX), endY - startY])
                 right_faces.append([startX + int((endX - startX) / 2) - face_eps, startY, endX - startX, endY - startY])
-                cv2.putText(img, text, (startX, y), cv2.FONT_HERSHEY_SIMPLEX, 1, face_left_color, 2)
+                # cv2.putText(img, text, (startX, y), cv2.FONT_HERSHEY_SIMPLEX, 1, face_left_color, 2)
                 break
 
         # for left eye
@@ -174,8 +174,8 @@ class FaceDetector:
                     x_left_face = x
                     y_left_face = y
                 i = i + 1
-            if left_ex < sys.maxsize:
-                cv2.rectangle(roi, (left_ex, left_ey), (left_ex + left_ew, left_ey + left_eh), face_left_color, 4)
+            # if left_ex < sys.maxsize:
+            #     cv2.rectangle(roi, (left_ex, left_ey), (left_ex + left_ew, left_ey + left_eh), face_left_color, 4)
 
         # for right eye
         right_ex = 0
@@ -196,9 +196,9 @@ class FaceDetector:
                     x_right_face = x
                     y_right_face = y
                 i = i + 1
-            if right_ex > 0:
-                cv2.rectangle(roi, (right_ex, right_ey), (right_ex + right_ew, right_ey + right_eh), face_right_color,
-                              4)
+            # if right_ex > 0:
+            #     cv2.rectangle(roi, (right_ex, right_ey), (right_ex + right_ew, right_ey + right_eh), face_right_color,
+            #                   4)
 
         global middle_point
         if left_ex < sys.maxsize and right_ex > 0:
@@ -219,9 +219,9 @@ class FaceDetector:
                     middle_point = int(round((x + (x + w)) / 2)), int(round((y + (y + h)) / 2)) - 2 * face_eps
             if not len(middle_point) > 0:  # no middle point retrieved before, if no face and no eyes are found
                 middle_point = (0, 0)
-        cv2.circle(img, middle_point, 10, face_middle_color, -1)
+        # cv2.circle(img, middle_point, 10, face_middle_color, -1)
 
-        return faces_bb, ProcessedImage(img, middle_point[0], middle_point[1])
+        return faces_bb, ProcessedImage(img, middle_point[0], middle_point[1], faces_bb)
 
 
 class ProcessedImage:
@@ -229,7 +229,7 @@ class ProcessedImage:
     The data of the processed image frame, which is calculated from face and eye positions.
     """
 
-    def __init__(self, frame, x_middle, y_middle):
+    def __init__(self, frame, x_middle, y_middle, faces_bb):
         """
         The constructor that sets the initialization parameters for the processed image class.
 
@@ -240,3 +240,15 @@ class ProcessedImage:
         self.frame = frame
         self.x_middle = x_middle
         self.y_middle = y_middle
+        
+        (x1, y1, x2, y2) = faces_bb[0] if faces_bb else (0, 0, 0, 0)
+        self.x_middle_relative = (x_middle - x1) / (x2 - x1)
+        self.y_middle_relative = (y_middle - y1) / (y2 - y1)
+
+        self.use_euler_angles = False
+
+    def add_euler_angles(self, yaw, pitch, roll):
+        self.yaw = yaw
+        self.pitch = pitch
+        self.roll = roll
+        self.use_euler_angles = True

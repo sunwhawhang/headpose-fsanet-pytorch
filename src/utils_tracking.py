@@ -18,7 +18,7 @@ class HeadPoseDataset(TensorDataset):
     """
     Custom torch.utils.data.Dataset for head pose data
     """
-    def __init__(self, file_list=None, normalise=True):
+    def __init__(self, file_list=None, normalise=True, maxlen=None):
         """
         Read head pose data and create a custom tensor dataset. The dataset contains a tuple of
         two tensors of shape:
@@ -49,11 +49,12 @@ class HeadPoseDataset(TensorDataset):
         self.label_mapping = {pose: i for i, pose in enumerate(HEAD_POSE)}
 
         for pose in HEAD_POSE:
-            pose_list = [f for f in file_list if pose in f]
+            match_str = '%s_%s_' %(pose, str(maxlen)) if maxlen else pose
+            pose_list = [f for f in file_list if match_str in f]
             for f in pose_list:
                 df = pd.read_csv(join(f"{ROOT_PATH}/src/collected_data", f))
                 for angle in EULER_ANGLES:
-                    angle_data = df[angle].values
+                    angle_data = df[angle].values * np.pi / 180  # convert to radians
                     if normalise:
                         angle_data = angle_data / np.mean(angle_data)
                     data[angle].append(angle_data)

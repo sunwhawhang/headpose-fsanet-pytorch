@@ -14,14 +14,14 @@ from os.path import isfile, join
 #local imports
 from face_detector import FaceDetector
 from utils import draw_axis
-from NodeShakeMode import NodShakeMode
+from NodeShakeMode import NodShakeMode, NodShakeHMM
 
 
 root_path = str(Path(__file__).absolute().parent.parent)
 
 COLLECT_DATA = False  # whether to collect data or not
 
-MAXLEN = 9 * 4  # max length of deque object used for tracking movement
+MAXLEN = 9 * 10  # max length of deque object used for tracking movement
 # my mac currently has 9 frames per second
 
 EULER_ANGLES = ["yaw", "pitch", "roll"]
@@ -30,14 +30,19 @@ HEAD_POSE = ["nod", "shake", "other"]
 start_idx = dict()
 all_files = [f for f in listdir("collected_data") if isfile(join("collected_data", f))]
 for pose in HEAD_POSE:
-    pose_list = [int(f.split('_')[-1]) for f in all_files if pose in f]
-    start_idx[pose] = max(pose_list) if pose_list else 0
+    if MAXLEN != 9 * 4:
+        pose_list = [int(f.split('_')[-1]) for f in all_files if '%s_%s_' %(pose, str(MAXLEN)) in f]
+    else:
+        pose_list = [int(f.split('_')[-1]) for f in all_files if pose in f]
+    start_idx[pose] = max(pose_list) + 1 if pose_list else 0
+print(start_idx)
 
 def _main(cap_src):
 
     prev_data = []
     data = []
     mode2 = NodShakeMode(prev_data, data)
+    hmm_model = NodShakeHMM(maxlen=15)
 
     cap = cv2.VideoCapture(cap_src)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
@@ -64,14 +69,17 @@ def _main(cap_src):
             print('Could not capture a valid frame from video source, check your cam/video value...')
             break
         #get face bounding boxes from frame
-        # face_bb = face_d.get(frame)
-        face_bb, data = face_d.detect_face_and_eyes_enhanced(frame, cv2.CascadeClassifier(eye_model))
+        if COLLECT_DATA:
+            face_bb = face_d.get(frame)
+            head_pose = ""
+        else:
+            face_bb, data = face_d.detect_face_and_eyes_enhanced(frame, cv2.CascadeClassifier(eye_model))
 
-        mode2.set_data(prev_data, data)
-        head_pose = mode2.apply()
-        prev_data.append(data)
+            # mode2.set_data(prev_data, data)
+            # head_pose = mode2.apply()
+            # prev_data.append(data)
 
-        for (x1,y1,x2,y2) in face_bb:
+        for (x1, y1, x2, y2) in face_bb:
             face_roi = frame[y1:y2+1,x1:x2+1]
 
             #preprocess headpose model input
@@ -91,8 +99,15 @@ def _main(cap_src):
             tracking_dict["pitch"].append(pitch)
             tracking_dict["roll"].append(roll)
 
+            if not COLLECT_DATA:
+                data.add_euler_angles(yaw, pitch, roll)
+                mode2.set_data(prev_data, data)
+                head_pose = mode2.apply()
+                prev_data.append(data)
+                hmm_model.add_data(data)
+                head_pose_hmm = hmm_model.determine_pose()
             # head_pose = ''
-            # print(datetime.datetime.now(), yaw, pitch, roll)
+            print(datetime.datetime.now(), yaw, pitch, roll)
             # print(np.std(tracking_dict["yaw"]), np.std(tracking_dict["pitch"]), np.std(tracking_dict["roll"]))
 
             # # Nodding is when pitch is changing fairly sinusoidal while roll and yaw stays relatively consistent
@@ -100,9 +115,11 @@ def _main(cap_src):
             #     head_pose = 'NOD' 
 
 
-            draw_axis(frame,yaw,pitch,roll,tdx=(x2-x1)//2+x1,tdy=(y2-y1)//2+y1,size=50)
+            draw_axis(frame, yaw, pitch, roll, tdx=(x2-x1)//2+x1, tdy=(y2-y1)//2+y1, size=50)
 
-            cv2.putText(frame, head_pose, (x1, y1), font, 2, (0, 0, 0), 3, cv2.LINE_AA)
+            # cv2.putText(frame, head_pose, (x1, y1), font, 2, (0, 0, 0), 3, cv2.LINE_AA)
+            cv2.putText(frame, head_pose_hmm, (x2, y2), font, 2, (0, 0, 0), 3, cv2.LINE_AA)
+
             #draw face bb
             # cv2.rectangle(frame,(x1,y1),(x2,y2),(0,255,0),2)
 
@@ -112,8 +129,9 @@ def _main(cap_src):
                 else:
                     df = pd.DataFrame.from_dict(tracking_dict)
                     df.to_csv(
-                        'collected_data/%s_%s'%(
-                            collect_head_pose, 
+                        'collected_data/%s_%s_%s'%(
+                            collect_head_pose,
+                            MAXLEN,
                             start_idx[collect_head_pose]
                         ), 
                         index=False,

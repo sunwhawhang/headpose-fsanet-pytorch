@@ -16,8 +16,8 @@ class SimpleHeadPoseModel(nn.Module):
         """
         super().__init__()
 
-        self.lstm = nn.LSTM(input_size, hidden_layer, batch_first=True, bidirectional=True)
-        self.fc1 = nn.Linear(2 * hidden_layer, 2 * hidden_layer)
+        self.lstm = nn.GRU(input_size, hidden_layer, batch_first=True)
+        self.fc1 = nn.Linear(hidden_layer, 2 * hidden_layer)
         self.fc2 = nn.Linear(2 * hidden_layer, 2 * hidden_layer)
         self.fc3 = nn.Linear(2 * hidden_layer, label_size)
 
@@ -37,6 +37,6 @@ class SimpleHeadPoseModel(nn.Module):
         out = self.fc3(out)
 
         if softmax:
-            out = self.softmax(out)
+            out = self.softmax(out, dim=-1)
 
         return out

@@ -1,0 +1,17 @@
+{
+    "hmm": 
+            {
+                "A": {
+                   "Up" : {"Up": 0.7, "Stationary": 0.2, "Down": 0.1},
+                   "Stationary" : {"Up": 0.4, "Stationary": 0.2, "Down": 0.4},
+                   "Down" : {"Up": 0.1, "Stationary": 0.2, "Down": 0.7}
+               },
+                "B": {
+                       "Up" : {"up": 1, "down": 0, "left": 0, "right": 0, "stationary": 0},
+                       "Stationary" : {"up": 0, "down": 0, "left": 0, "right": 0, "stationary": 1},
+                       "Down" : {"up": 0, "down": 1, "left": 0, "right": 0, "stationary": 0}
+                },
+                "pi": {"Up": 0.4, "Stationary": 0.2, "Down": 0.4}        
+            }
+        
+}
