@@ -1,0 +1,24 @@
+{
+    "hmm": 
+            {
+                "A": {
+                   "Left" : {"Left": 0.6, "Stationary": 0.19, "Right": 0.19, "Up":0.01, "Down":0.01},
+                   "Stationary" : {"Left": 0.39, "Stationary": 0.2, "Right": 0.39, "Up":0.01, "Down":0.01},
+                   "Right" : {"Left": 0.6, "Stationary": 0.15, "Right": 0.4, "Up":0.15, "Down":0.15},
+                   "Up": {"Left": 0.15, "Stationary": 0.15, "Right": 0.15, "Up":0.4, "Down":0.15},
+                   "Down": {"Left": 0.15, "Stationary": 0.15, "Right": 0.15, "Up":0.15, "Down":0.4}
+               },
+                "B": {
+                       "Left" : {"up": 0, "down": 0, "left": 1, "right": 0, "stationary": 0},
+                       "Stationary" : {"up": 0, "down": 0, "left": 0, "right": 0, "stationary": 1},
+                       "Right" : {"up": 0, "down": 0, "left": 0, "right": 1, "stationary": 0},
+                       "Up" : {"up": 1, "down": 0, "left": 0, "right": 0, "stationary": 0},
+                       "Down" : {"up": 0, "down": 1, "left": 0, "right": 0, "stationary": 0}
+                    },
+                "pi": {"Left": 0.2, "Stationary": 0.2, "Right": 0.2, "Up": 0.2, "Down": 0.2}        
+            }
+        
+}
+
+
+

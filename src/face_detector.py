@@ -206,11 +206,11 @@ class FaceDetector:
 
             # point for left eye
             left_point = (x_left_face + left_ex, y_left_face + left_ey + int(round(left_eh / 2)))
-            cv2.circle(img, left_point, 10, face_left_color, -1)
+            # cv2.circle(img, left_point, 10, face_left_color, -1)
 
             # point for right eye
             right_point = (x_right_face + right_ex + right_ew, y_right_face + right_ey + int(round(right_eh / 2)))
-            cv2.circle(img, right_point, 10, face_right_color, -1)
+            # cv2.circle(img, right_point, 10, face_right_color, -1)
 
             middle_point = int(round((left_point[0] + right_point[0]) / 2)), int(round((left_point[1] + right_point[1])
                                                                                        / 2))

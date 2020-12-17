@@ -42,7 +42,7 @@ def _main(cap_src):
     prev_data = []
     data = []
     mode2 = NodShakeMode(prev_data, data)
-    hmm_model = NodShakeHMM(maxlen=15)
+    hmm_model = NodShakeHMM(maxlen=12)
 
     cap = cv2.VideoCapture(cap_src)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
