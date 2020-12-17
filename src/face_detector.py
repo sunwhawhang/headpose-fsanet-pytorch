@@ -139,6 +139,7 @@ class FaceDetector:
                 text = "Face: {:.2f}%".format(confidence * 100)
                 y = startY - face_eps if startY - face_eps > 10 else startY + face_eps
 
+
                 # left face half
                 # cv2.rectangle(img, (startX, startY), (endX - int((endX - startX) / 2) + face_eps, endY),
                 #               face_left_color, 4)
@@ -219,9 +220,10 @@ class FaceDetector:
                     middle_point = int(round((x + (x + w)) / 2)), int(round((y + (y + h)) / 2)) - 2 * face_eps
             if not len(middle_point) > 0:  # no middle point retrieved before, if no face and no eyes are found
                 middle_point = (0, 0)
+            left_point, right_point = None, None
         # cv2.circle(img, middle_point, 10, face_middle_color, -1)
 
-        return faces_bb, ProcessedImage(img, middle_point[0], middle_point[1], faces_bb)
+        return faces_bb, ProcessedImage(img, middle_point[0], middle_point[1], faces_bb, left_point, right_point)
 
 
 class ProcessedImage:
@@ -229,7 +231,7 @@ class ProcessedImage:
     The data of the processed image frame, which is calculated from face and eye positions.
     """
 
-    def __init__(self, frame, x_middle, y_middle, faces_bb):
+    def __init__(self, frame, x_middle, y_middle, faces_bb, left_point, right_point):
         """
         The constructor that sets the initialization parameters for the processed image class.
 
@@ -244,6 +246,10 @@ class ProcessedImage:
         (x1, y1, x2, y2) = faces_bb[0] if faces_bb else (0, 0, 0, 0)
         self.x_middle_relative = (x_middle - x1) / (x2 - x1)
         self.y_middle_relative = (y_middle - y1) / (y2 - y1)
+
+        self.x1, self.y1, self.x2, self.y2 = x1, y1, x2, y2
+
+        self.xy_ratio = abs((x1 - x2) / (y1 - y2))
 
         self.use_euler_angles = False
 

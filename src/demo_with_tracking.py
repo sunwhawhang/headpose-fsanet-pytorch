@@ -62,6 +62,8 @@ def _main(cap_src):
     
     collect_head_pose = None
 
+    prev_head_pose_hmm = 'stationary'
+
     print('Processing frames, press q to exit application...')
     while True:
         ret,frame = cap.read()
@@ -105,14 +107,19 @@ def _main(cap_src):
                 head_pose = mode2.apply()
                 prev_data.append(data)
                 hmm_model.add_data(data)
-                head_pose_hmm = hmm_model.determine_pose()
+                new_head_pose_hmm = hmm_model.determine_pose()
+                if new_head_pose_hmm == 'stationary' or prev_head_pose_hmm == new_head_pose_hmm:
+                    head_pose_hmm = new_head_pose_hmm
+                else:
+                    head_pose_hmm = prev_head_pose_hmm
+                prev_head_pose_hmm = new_head_pose_hmm
             # head_pose = ''
             print(datetime.datetime.now(), yaw, pitch, roll)
             # print(np.std(tracking_dict["yaw"]), np.std(tracking_dict["pitch"]), np.std(tracking_dict["roll"]))
 
             # # Nodding is when pitch is changing fairly sinusoidal while roll and yaw stays relatively consistent
             # if np.std(tracking_dict["yaw"]) < 3 and np.std(tracking_dict["roll"]) < 3 and np.std(tracking_dict["pitch"]) > 3:
-            #     head_pose = 'NOD' 
+            #     head_pose = 'NOD'
 
 
             draw_axis(frame, yaw, pitch, roll, tdx=(x2-x1)//2+x1, tdy=(y2-y1)//2+y1, size=50)
@@ -121,7 +128,7 @@ def _main(cap_src):
             cv2.putText(frame, head_pose_hmm, (x2, y2), font, 2, (0, 0, 0), 3, cv2.LINE_AA)
 
             #draw face bb
-            # cv2.rectangle(frame,(x1,y1),(x2,y2),(0,255,0),2)
+            cv2.rectangle(frame,(x1,y1),(x2,y2),(0,255,0),2)
 
             if COLLECT_DATA and len(tracking_dict["yaw"]) == MAXLEN:
                 if not collect_head_pose:
