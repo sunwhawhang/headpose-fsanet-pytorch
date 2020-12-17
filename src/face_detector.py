@@ -243,11 +243,14 @@ class ProcessedImage:
         self.x_middle = x_middle
         self.y_middle = y_middle
         
-        (x1, y1, x2, y2) = faces_bb[0] if faces_bb else (0, 0, 0, 0)
-        self.x_middle_relative = (x_middle - x1) / (x2 - x1)
-        self.y_middle_relative = (y_middle - y1) / (y2 - y1)
+        (x1, y1, x2, y2) = faces_bb[0] if faces_bb else (None, None, None, None)
+        # self.x_middle_relative = (x_middle - x1) / (x2 - x1)
+        # self.y_middle_relative = (y_middle - y1) / (y2 - y1)
 
         self.x1, self.y1, self.x2, self.y2 = x1, y1, x2, y2
+
+        if not self.x1:
+            return
 
         self.xy_ratio = abs((x1 - x2) / (y1 - y2))
 

@@ -78,33 +78,33 @@ class NodShakeMode:
             # weighted difference values
             x_differences = []
             y_differences = []
-            x_differences_relative = []
-            y_differences_relative = []
+            # x_differences_relative = []
+            # y_differences_relative = []
 
             for d in last_frames:
                 x_differences.append(abs(self.data.x_middle - d.x_middle))
                 y_differences.append(abs(self.data.y_middle - d.y_middle))
-                x_differences_relative.append(abs(self.data.x_middle_relative - d.x_middle_relative))
-                y_differences_relative.append(abs(self.data.y_middle_relative - d.y_middle_relative))
+                # x_differences_relative.append(abs(self.data.x_middle_relative - d.x_middle_relative))
+                # y_differences_relative.append(abs(self.data.y_middle_relative - d.y_middle_relative))
 
             self.shake_detected = (
                 sum(x_differences) > sum(y_differences) + abs(shake_diff_eps) and
-                sum(x_differences_relative) > sum(y_differences_relative) + abs(shake_relative_diff_eps) and
+                # sum(x_differences_relative) > sum(y_differences_relative) + abs(shake_relative_diff_eps) and
                 sum(x_differences) < 500
             )
             self.nod_detected = (
                 sum(y_differences) > sum(x_differences) + abs(nod_diff_eps) and
-                sum(y_differences_relative) > sum(x_differences_relative) + abs(nod_relative_diff_eps) and
+                # sum(y_differences_relative) > sum(x_differences_relative) + abs(nod_relative_diff_eps) and
                 sum(y_differences) < 500
             ) 
 
         if self.nothing >= nothing_num and self.nod_detected:
-            print("nod detected!", sum(y_differences), sum(y_differences_relative))
+            # print("nod detected!", sum(y_differences), sum(y_differences_relative))
             self.nothing = 0
             return "Nod"
 
         if self.nothing >= nothing_num and self.shake_detected:
-            print("shake detected!", sum(x_differences), sum(x_differences_relative))
+            # print("shake detected!", sum(x_differences), sum(x_differences_relative))
             self.nothing = 0
             return "Shake"
 

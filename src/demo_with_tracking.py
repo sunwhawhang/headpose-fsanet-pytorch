@@ -82,6 +82,8 @@ def _main(cap_src):
             # prev_data.append(data)
 
         for (x1, y1, x2, y2) in face_bb:
+            if x1 < 0 or y1 < 0 or x2 < 0 or y2 < 0:
+                continue
             face_roi = frame[y1:y2+1,x1:x2+1]
 
             #preprocess headpose model input
@@ -105,8 +107,9 @@ def _main(cap_src):
                 data.add_euler_angles(yaw, pitch, roll)
                 mode2.set_data(prev_data, data)
                 head_pose = mode2.apply()
-                prev_data.append(data)
-                hmm_model.add_data(data)
+                if data.x1:
+                    prev_data.append(data)
+                    hmm_model.add_data(data)
                 new_head_pose_hmm = hmm_model.determine_pose()
                 if new_head_pose_hmm == 'stationary' or prev_head_pose_hmm == new_head_pose_hmm:
                     head_pose_hmm = new_head_pose_hmm
