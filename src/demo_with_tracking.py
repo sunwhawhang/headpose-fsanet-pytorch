@@ -12,7 +12,7 @@ from os import listdir
 from os.path import isfile, join
 
 #local imports
-from face_detector import FaceDetector
+from face_detector import FaceDetector, ResizeWithAspectRatio
 from utils import draw_axis
 from NodeShakeMode import NodShakeMode, NodShakeHMM
 
@@ -151,6 +151,7 @@ def _main(cap_src):
                 for angle in EULER_ANGLES:
                     tracking_dict[angle].clear()
                 input("Enter to continue and do head pose: %s"%collect_head_pose)
+        frame = ResizeWithAspectRatio(frame, width=1000)
         cv2.imshow('Frame', frame)
 
         key = cv2.waitKey(1)&0xFF
