@@ -117,6 +117,8 @@ class FaceDetector:
         right_eh = 0
 
         (h, w) = img.shape[:2]
+        img2 = cv2.resize(img, (300, 300))
+        cv2.imwrite("good.jpg", img2)
         blob = cv2.dnn.blobFromImage(cv2.resize(img, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
         net.setInput(blob)
         detections = net.forward()
@@ -154,7 +156,7 @@ class FaceDetector:
                 right_faces.append([startX + int((endX - startX) / 2) - face_eps, startY, endX - startX, endY - startY])
                 # cv2.putText(img, text, (startX, y), cv2.FONT_HERSHEY_SIMPLEX, 1, face_left_color, 2)
                 break
-
+        print("------------------------------------------ ", i)
         # for left eye
         left_ex = sys.maxsize
         x_left_face = 0
